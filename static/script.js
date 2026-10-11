@@ -527,11 +527,16 @@ if (weatherButton) {
                 `/api/weather?city=${encodeURIComponent(city)}`
             );
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    data.error || "Unable to fetch weather."
+            const responseText = await response.text();
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch {
+                throw new Error("The server returned an invalid response.");
+           }
+           if (!response.ok) {
+               throw new Error(
+                   data.error || `Weather request failed (HTTP ${response.status}).`
                 );
             }
 

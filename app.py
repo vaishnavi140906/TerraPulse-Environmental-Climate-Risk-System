@@ -8,6 +8,8 @@ import tensorflow as tf
 from flask import Flask, render_template, request, jsonify
 import requests
 from dotenv import load_dotenv
+load_dotenv()
+WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, "models")
@@ -440,13 +442,13 @@ def predict():
         "index.html",
         results=results,
         input_values=record["inputs"],
-        history=load_history()[:10]
+        history=load_history()
     )
 
 
 @app.route("/history")
 def history():
-    return jsonify(load_history()[:20])
+    return jsonify(load_history())
 
 @app.route("/api/weather")
 def get_live_weather():
@@ -491,15 +493,20 @@ def get_live_weather():
             "source": "WeatherAPI.com"
         })
 
-    except requests.HTTPError:
+    except requests.HTTPError as e:
+        print("Weather API HTTP error:", response.status_code, response.text)
         return jsonify({
-            "error": "Weather API request failed. Check the city, key or API limits."
+            "error": f"Weather API error: {response.status_code}. Check the API key, city, or API limits."
         }), 502
-    except requests.RequestException:
+
+    except requests.RequestException as e:
+        print("Weather connection error:", str(e))
         return jsonify({
             "error": "Could not connect to the weather service."
         }), 502
-    except (KeyError, ValueError):
+
+    except (KeyError, ValueError) as e:
+        print("Weather response parsing error:", str(e))
         return jsonify({
             "error": "Unexpected response from the weather service."
         }), 502
