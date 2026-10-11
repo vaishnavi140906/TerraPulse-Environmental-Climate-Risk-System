@@ -10,9 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
@@ -29,14 +27,13 @@
 
         <div class="nav-links">
             <a href="#dashboard">Dashboard</a>
+            <a href="#live-weather">Live Weather</a>
             <a href="#predict">Predict</a>
             <a href="#insights">Insights</a>
             <a href="#history">History</a>
         </div>
 
-        <a href="#predict" class="nav-cta">
-            Explore risks <span>↗</span>
-        </a>
+        <a href="#predict" class="nav-cta">Explore risks ↗</a>
     </nav>
 
     <main class="container">
@@ -55,14 +52,14 @@
                 </h1>
 
                 <p class="hero-description">
-                    Explore environmental conditions, identify potential
+                    Explore live environmental conditions, identify potential
                     climate risks, and turn data into meaningful action
                     with your AI-powered environmental dashboard.
                 </p>
 
                 <div class="hero-actions">
-                    <a href="#predict" class="btn btn-primary">
-                        Start prediction <span>→</span>
+                    <a href="#live-weather" class="btn btn-primary">
+                        Explore live weather →
                     </a>
                     <a href="#insights" class="btn btn-secondary">
                         View insights
@@ -70,8 +67,7 @@
                 </div>
 
                 <div class="hero-footnote">
-                    <span>✦</span>
-                    Environment · Climate · Deep Learning
+                    ✦ Environment · Climate · Deep Learning
                 </div>
             </div>
 
@@ -132,13 +128,88 @@
             </div>
         </section>
 
+        <!-- LIVE WEATHER DASHBOARD -->
+        <section class="section-block" id="live-weather">
+            <div class="section-heading">
+                <div>
+                    <div class="eyebrow">LIVE DATA / WEATHER API</div>
+                    <h2>Live <span class="gradient-text">Weather</span></h2>
+                    <p>Current weather measurements retrieved from WeatherAPI.com.</p>
+                </div>
+                <span class="status-pill status-idle" id="weather-status">
+                    Not loaded
+                </span>
+            </div>
+
+            <div class="input-panel">
+                <div class="weather-search">
+                    <label for="weather-city">Search city</label>
+                    <div class="weather-search-controls">
+                        <input id="weather-city" type="text"
+                               value="Chennai" placeholder="Enter a city name">
+                        <button type="button" id="fetch-weather"
+                                class="btn btn-primary">
+                            Fetch live weather
+                        </button>
+                    </div>
+                </div>
+
+                <p id="weather-message" role="status" aria-live="polite">
+                    Enter a city and click Fetch Live Weather.
+                </p>
+
+                <div class="weather-grid">
+                    <article class="weather-card">
+                        <span>🌡️ Temperature</span>
+                        <strong id="weather-temperature">-- °C</strong>
+                    </article>
+
+                    <article class="weather-card">
+                        <span>💧 Humidity</span>
+                        <strong id="weather-humidity">-- %</strong>
+                    </article>
+
+                    <article class="weather-card">
+                        <span>🌧️ Rainfall</span>
+                        <strong id="weather-rainfall">-- mm</strong>
+                    </article>
+
+                    <article class="weather-card">
+                        <span>🌬️ Wind speed</span>
+                        <strong id="weather-wind">-- km/h</strong>
+                    </article>
+
+                    <article class="weather-card">
+                        <span>🌡️ Pressure</span>
+                        <strong id="weather-pressure">-- hPa</strong>
+                    </article>
+
+                    <article class="weather-card">
+                        <span>🌫️ PM2.5</span>
+                        <strong id="weather-pm25">-- µg/m³</strong>
+                    </article>
+
+                    <article class="weather-card">
+                        <span>Air condition</span>
+                        <strong id="weather-condition">--</strong>
+                    </article>
+                </div>
+
+                <p class="weather-footnote">
+                    Source: WeatherAPI.com. Weather measurements are provider
+                    data; AI risk classifications are estimates and are not
+                    official safety warnings.
+                </p>
+            </div>
+        </section>
+
         <!-- PREDICTION FORM -->
         <section class="section-block" id="predict">
             <div class="section-heading">
                 <div>
                     <div class="eyebrow">01 / DATA INPUT</div>
                     <h2>Explore your <span class="gradient-text">environment</span></h2>
-                    <p>Enter the environmental measurements required by your model.</p>
+                    <p>Enter environmental measurements for AI risk analysis.</p>
                 </div>
                 <span class="section-sticker">🌱 Make data matter</span>
             </div>
@@ -148,15 +219,10 @@
                     <div class="panel-icon">⌘</div>
                     <div>
                         <h3>Environmental parameters</h3>
-                        <p>Enter the values supported by your Python backend.</p>
+                        <p>Provide the nine measurements required by your model.</p>
                     </div>
                 </div>
 
-                <!--
-                  IMPORTANT:
-                  Match the name attributes below to the input names
-                  expected by your app.py prediction route.
-                -->
                 <form action="/predict" method="POST" class="prediction-form">
                     <div class="form-grid">
                         <div class="field">
@@ -188,10 +254,34 @@
                         </div>
 
                         <div class="field">
+                            <label for="pressure">Atmospheric pressure (hPa)</label>
+                            <input id="pressure" name="pressure"
+                                   type="number" min="0" step="any"
+                                   value="{{ input_values.pressure if input_values else 1013 }}"
+                                   required>
+                        </div>
+
+                        <div class="field">
                             <label for="pm25">PM2.5 (µg/m³)</label>
                             <input id="pm25" name="pm25"
                                    type="number" min="0" step="any"
                                    placeholder="e.g. 24" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="pm10">PM10 (µg/m³)</label>
+                            <input id="pm10" name="pm10"
+                                   type="number" min="0" step="any"
+                                   value="{{ input_values.pm10 if input_values else 25 }}"
+                                   required>
+                        </div>
+
+                        <div class="field">
+                            <label for="water_level">Water level (m)</label>
+                            <input id="water_level" name="water_level"
+                                   type="number" min="0" step="any"
+                                   value="{{ input_values.water_level if input_values else 1.0 }}"
+                                   required>
                         </div>
 
                         <div class="field">
@@ -200,61 +290,19 @@
                                    type="number" min="0" max="100" step="any"
                                    placeholder="e.g. 40" required>
                         </div>
-
-                        <div class="field">
-    <label for="pm10">PM10 (µg/m³)</label>
-    <input
-        id="pm10"
-        name="pm10"
-        type="number"
-        min="0"
-        step="any"
-        placeholder="Example: 25"
-        value="{{ input_values.pm10 if input_values else 25 }}"
-        required
-    >
-</div>
-
-<div class="field">
-    <label for="pressure">Atmospheric Pressure (hPa)</label>
-    <input
-        id="pressure"
-        name="pressure"
-        type="number"
-        min="0"
-        step="any"
-        placeholder="Example: 1013"
-        value="{{ input_values.pressure if input_values else 1013 }}"
-        required
-    >
-</div>
-
-<div class="field">
-    <label for="water_level">Water Level (m)</label>
-    <input
-        id="water_level"
-        name="water_level"
-        type="number"
-        min="0"
-        step="any"
-        placeholder="Example: 1.0"
-        value="{{ input_values.water_level if input_values else 1.0 }}"
-        required
-    >
-</div>
                     </div>
 
                     <div class="form-footer">
-                        <p><span>ⓘ</span> Use consistent units and valid measurements.</p>
+                        <p>ⓘ Use consistent units and valid measurements.</p>
                         <button type="submit" class="btn btn-primary submit-btn">
-                            Analyze environment <span>↗</span>
+                            Analyze environment ↗
                         </button>
                     </div>
                 </form>
             </div>
         </section>
 
-        <!-- RESULTS -->
+        <!-- PREDICTION RESULTS -->
         <section class="section-block" id="insights">
             <div class="section-heading">
                 <div>
@@ -262,6 +310,7 @@
                     <h2>Your environmental <span class="gradient-text">snapshot</span></h2>
                     <p>Review the predictions returned by your model.</p>
                 </div>
+
                 {% if results %}
                     <span class="status-pill">
                         <span class="live-dot"></span> Results available
@@ -273,7 +322,6 @@
 
             {% if results %}
             <div class="risk-grid">
-
                 <article class="risk-card card-lime">
                     <div class="risk-card-top">
                         <span class="risk-icon">◉</span>
@@ -338,7 +386,6 @@
                         <span class="risk-arrow">↗</span>
                     </div>
                 </article>
-
             </div>
 
             <div class="analysis-grid">
@@ -376,25 +423,19 @@
                     </p>
 
                     <div class="recommendation-list">
-                        {% if results and results.recommendations %}
+                        {% if results.recommendations %}
                             {% for tip in results.recommendations %}
-                                <div class="recommendation-item">
-                                    <span class="recommendation-icon lime">✓</span>
-                                    <div>
-                                        <strong>{{ tip.title }}</strong>
-                                        <p><b>Status:</b> {{ tip.status }}</p>
-                                        <p>{{ tip.message }}</p>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
                             <div class="recommendation-item">
                                 <span class="recommendation-icon lime">✓</span>
                                 <div>
-                                    <strong>Monitor conditions</strong>
-                                    <p>Submit environmental measurements to receive recommendations based on your results.</p>
+                                    <strong>{{ tip.title }}</strong>
+                                    <p><b>Status:</b> {{ tip.status }}</p>
+                                    <p>{{ tip.message }}</p>
                                 </div>
                             </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>Monitor conditions and follow official local advisories.</p>
                         {% endif %}
                     </div>
                 </article>
@@ -425,33 +466,33 @@
 
             <div class="input-panel">
                 {% if history %}
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; text-align:left;">
                         <thead>
                             <tr>
-                                <th style="padding: 12px;">Date & Time</th>
-                                <th style="padding: 12px;">Temperature</th>
-                                <th style="padding: 12px;">Rainfall</th>
-                                <th style="padding: 12px;">Air Quality</th>
-                                <th style="padding: 12px;">Flood Risk</th>
-                                <th style="padding: 12px;">Fire Risk</th>
-                                <th style="padding: 12px;">Heatwave</th>
-                                <th style="padding: 12px;">Drought</th>
-                                <th style="padding: 12px;">Overall Risk</th>
+                                <th style="padding:12px;">Date &amp; Time</th>
+                                <th style="padding:12px;">Temperature</th>
+                                <th style="padding:12px;">Rainfall</th>
+                                <th style="padding:12px;">Air Quality</th>
+                                <th style="padding:12px;">Flood Risk</th>
+                                <th style="padding:12px;">Fire Risk</th>
+                                <th style="padding:12px;">Heatwave</th>
+                                <th style="padding:12px;">Drought</th>
+                                <th style="padding:12px;">Overall Risk</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in history %}
                             <tr>
-                                <td style="padding: 12px;">{{ item.timestamp }}</td>
-                                <td style="padding: 12px;">{{ item.inputs.temperature }} °C</td>
-                                <td style="padding: 12px;">{{ item.inputs.rainfall }} mm</td>
-                                <td style="padding: 12px;">{{ item.results.air_quality }}</td>
-                                <td style="padding: 12px;">{{ item.results.flood_risk }}</td>
-                                <td style="padding: 12px;">{{ item.results.fire_risk }}</td>
-                                <td style="padding: 12px;">{{ item.results.heatwave_risk }}</td>
-                                <td style="padding: 12px;">{{ item.results.drought_risk }}</td>
-                                <td style="padding: 12px;">
+                                <td style="padding:12px;">{{ item.timestamp }}</td>
+                                <td style="padding:12px;">{{ item.inputs.temperature }} °C</td>
+                                <td style="padding:12px;">{{ item.inputs.rainfall }} mm</td>
+                                <td style="padding:12px;">{{ item.results.air_quality }}</td>
+                                <td style="padding:12px;">{{ item.results.flood_risk }}</td>
+                                <td style="padding:12px;">{{ item.results.fire_risk }}</td>
+                                <td style="padding:12px;">{{ item.results.heatwave_risk }}</td>
+                                <td style="padding:12px;">{{ item.results.drought_risk }}</td>
+                                <td style="padding:12px;">
                                     {{ item.results.overall_risk }}
                                     ({{ item.results.overall_score }})
                                 </td>
@@ -478,7 +519,7 @@
                 <span>Terra<span class="brand-accent">Pulse</span></span>
             </a>
             <p>Built for a greener tomorrow. 🌱</p>
-            <span>Environmental & Climate Risk Prediction</span>
+            <span>Environmental &amp; Climate Risk Prediction</span>
         </footer>
 
     </main>

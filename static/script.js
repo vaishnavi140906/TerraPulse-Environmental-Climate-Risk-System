@@ -495,3 +495,85 @@ links.forEach(link => {
 });
 
 }
+
+// =====================================
+// LIVE WEATHER API INTEGRATION
+// =====================================
+
+const weatherButton = document.getElementById("fetch-weather");
+
+if (weatherButton) {
+    weatherButton.addEventListener("click", async () => {
+        const cityInput = document.getElementById("weather-city");
+        const message = document.getElementById("weather-message");
+        const status = document.getElementById("weather-status");
+
+        const city = cityInput.value.trim();
+
+        if (!city) {
+            message.textContent = "Please enter a city name.";
+            return;
+        }
+
+        weatherButton.disabled = true;
+        message.textContent = "Fetching live weather...";
+        
+        if (status) {
+            status.textContent = "Loading...";
+        }
+
+        try {
+            const response = await fetch(
+                `/api/weather?city=${encodeURIComponent(city)}`
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Unable to fetch weather."
+                );
+            }
+
+            document.getElementById("weather-temperature").textContent =
+                `${data.temperature ?? "--"} °C`;
+
+            document.getElementById("weather-humidity").textContent =
+                `${data.humidity ?? "--"} %`;
+
+            document.getElementById("weather-rainfall").textContent =
+                `${data.rainfall ?? "--"} mm`;
+
+            document.getElementById("weather-wind").textContent =
+                `${data.wind_speed ?? "--"} km/h`;
+
+            document.getElementById("weather-pressure").textContent =
+                `${data.pressure ?? "--"} hPa`;
+
+            document.getElementById("weather-pm25").textContent =
+                data.pm25 == null
+                    ? "Unavailable"
+                    : `${data.pm25} µg/m³`;
+
+            document.getElementById("weather-condition").textContent =
+                data.condition ?? "Unavailable";
+
+            message.textContent =
+                `${data.city}, ${data.country} | Updated ${data.updated_at}`;
+
+            if (status) {
+                status.textContent = "Weather loaded successfully";
+            }
+
+        } catch (error) {
+            message.textContent = error.message;
+
+            if (status) {
+                status.textContent = "Weather unavailable";
+            }
+
+        } finally {
+            weatherButton.disabled = false;
+        }
+    });
+}

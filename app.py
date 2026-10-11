@@ -1,12 +1,13 @@
 import os
 import json
 from datetime import datetime
-
 import joblib
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 from flask import Flask, render_template, request, jsonify
+import requests
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, "models")
@@ -446,6 +447,62 @@ def predict():
 @app.route("/history")
 def history():
     return jsonify(load_history()[:20])
+
+@app.route("/api/weather")
+def get_live_weather():
+    city = request.args.get("city", "Chennai").strip()
+    api_key = os.getenv("WEATHER_API_KEY")
+
+    if not api_key:
+        return jsonify({"error": "Weather API key is not configured"}), 500
+
+    if not city:
+        return jsonify({"error": "Please enter a city name"}), 400
+
+    try:
+        response = requests.get(
+            "https://api.weatherapi.com/v1/current.json",
+            params={
+                "key": api_key,
+                "q": city,
+                "aqi": "yes"
+            },
+            timeout=15
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        current = data["current"]
+        location = data["location"]
+        air = current.get("air_quality") or {}
+
+        return jsonify({
+            "city": location["name"],
+            "country": location["country"],
+            "temperature": current["temp_c"],
+            "humidity": current["humidity"],
+            "rainfall": current["precip_mm"],
+            "wind_speed": current["wind_kph"],
+            "pressure": current["pressure_mb"],
+            "pm25": air.get("pm2_5"),
+            "pm10": air.get("pm10"),
+            "condition": current["condition"]["text"],
+            "updated_at": current["last_updated"],
+            "source": "WeatherAPI.com"
+        })
+
+    except requests.HTTPError:
+        return jsonify({
+            "error": "Weather API request failed. Check the city, key or API limits."
+        }), 502
+    except requests.RequestException:
+        return jsonify({
+            "error": "Could not connect to the weather service."
+        }), 502
+    except (KeyError, ValueError):
+        return jsonify({
+            "error": "Unexpected response from the weather service."
+        }), 502
 
 
 if __name__ == "__main__":
